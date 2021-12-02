@@ -13,46 +13,46 @@ Como proyecto final de la **DIPLOMATURA EN PROGRAMACIÓN APLICADA AL INTERNET DE
 
 ## Tareas a realizar
 
-[ ] Inizialización de proyecto.
-[ ] Adeción de colaboradores.
-[ ] Creación de proyecto en PlatformIO.
-[ ] Creación de commit inicial.
-[ ] Definición y realización de tareas.
+- [x] Inizialización de proyecto.
+- [x] Adeción de colaboradores.
+- [x] Creación de proyecto en PlatformIO.
+- [x] Creación de commit inicial.
+- [ ] Definición y realización de tareas.
 
 
 # Tareas
 
 A medida que avanzemos iremos añadiendo, borrando o modificando las tareas según el avance del proyecto.
 - Crear Funciones o tareas:
-[ ] Actuador de ultrasonido.
-[ ] Medidor de distancia.
-[ ] Detector de ingreso.
-[ ] Detector de egreso.
-[ ] Contador de evento (ingreso o egreso).
-[ ] Actuador de alarmas o señales vigia (cupo completo o incompleto).
-[ ] Conexión MQTT.
-[ ] Conexión WiFi modo Station.
-[ ] Ingreso de credenciales MQTT via WEB.
-[ ] Envio de datos a Broker MQTT.
-[ ] Recepción de datos desde Broker MQTT.
+- [ ] Actuador de ultrasonido.
+- [ ] Medidor de distancia.
+- [ ] Detector de ingreso.
+- [ ] Detector de egreso.
+- [ ] Contador de evento (ingreso o egreso).
+- [ ] Actuador de alarmas o señales vigia (cupo completo o incompleto).
+- [ ] Conexión MQTT.
+- [ ] Conexión WiFi modo Station.
+- [ ] Ingreso de credenciales MQTT via WEB.
+- [ ] Envio de datos a Broker MQTT.
+- [ ] Recepción de datos desde Broker MQTT.
 
 - Node Red:
-[ ] Inicialización del Broker MQTT.
-[ ] Inicialización de conexion a Base de Datos MySQL.
-[ ] Función de recepcion de datos.
-[ ] Formateo de datos.
-[ ] Envio de datos a MySQL.
-[ ] Envio de datos a Dashboard.
-[ ] Recepción de datos de Dashboard.
-[ ] Función de envio de datos a los Nodos.
-[ ] Función de formateo de datos para los Nodos.
+- [ ] Inicialización del Broker MQTT.
+- [ ] Inicialización de conexion a Base de Datos MySQL.
+- [ ] Función de recepcion de datos.
+- [ ] Formateo de datos.
+- [ ] Envio de datos a MySQL.
+- [ ] Envio de datos a Dashboard.
+- [ ] Recepción de datos de Dashboard.
+- [ ] Función de envio de datos a los Nodos.
+- [ ] Función de formateo de datos para los Nodos.
 
 - Base de datos MySQL:
-[ ] Creacion e implementacion en servidor.
-[ ] Creación de usuario de escritura.
-[ ] Creación de usuario de lectura.
-[ ] Creación de tabla.
-[ ] Definición de modelos o entidades de datos.
+- [ ] Creacion e implementacion en servidor.
+- [ ] Creación de usuario de escritura.
+- [ ] Creación de usuario de lectura.
+- [ ] Creación de tabla.
+- [ ] Definición de modelos o entidades de datos.
 
 > Coordinaremos las tareas a realizar por medio de los diferentes medios de comunicación disponibles.
 Se realizará cada tarea en un branch diferente o al menos en el bramch especifico de quien la realiza y, una vez finalizada, se informará marcandola aquí mismo.
