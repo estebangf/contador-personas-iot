@@ -40,261 +40,324 @@ String webpageCode = (String)(readFileIntoString(filename).c_str());
 //============
 
 String WebpageCode = R"***(
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="es">
+
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-   <title>Grafica con ESP32</title>
-  <script src="https://code.highcharts.com/highcharts.js"></script>
-  <style>
-    body {
-      min-width: 310px;
-      max-width: 1000px;
-      height: 400px;
-      margin: 0 auto;
-      background-color: rgb(180, 205, 228);
-    }
-    h2 {
-      font-family: Arial;
-      font-size: 2.0rem;
-      text-align: center;
-    }
-
-   #reloj
-   {
-     color:blue;
-     text-align: right;
-     font-size: 24px;
-   }
-   
-
-.btn {
-  border: none;
-  background-color: inherit;
-  padding: 14px 28px;
-  font-size: 16px;
-  cursor: pointer;
-  display: inline-block;
-}
-
-.btn:hover {background: #eee;}
-
-.limpiar {color: green;}
-.parar {color: dodgerblue;}
-.continuar {color: orange;}
-
-    
-  </style>
+  <title>My page</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1, width=device-width" />
+  <script src="https://unpkg.com/react@latest/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@latest/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@mui/material@latest/umd/material-ui.production.min.js"
+    crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/babel-standalone@latest/babel.min.js" crossorigin="anonymous"></script>
+  <!-- Fonts to support Material Design -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
+  <!-- Icons to support Material Design -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
 </head>
+<style>
+  html {
+    height: 100%;
+  }
+
+  body {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-image: url(https://drive.google.com/uc?export=view&id=1YYG90Hlv2h17WDtnORxy72zzb1rwD2To);
+    /* background: url("https://images.idgesg.net/images/article/2017/09/wireless_mobile_network_iot_internet_of_things_edge_computing_thinkstock_613880046_3x2_1200x800-100736484-large.jpg?auto=webp&quality=85,70"); */
+    background-size: cover;
+  }
+
+  .ToHome {
+    top: 24px;
+    color: #9360ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    width: fit-content;
+    margin: auto;
+  }
+
+  .Settings {
+    padding: 32px;
+    background-size: contain;
+    padding-top: 100px;
+    padding-bottom: 12px;
+    background-repeat: no-repeat;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .Broker {
+    background-image: url(https://drive.google.com/uc?export=view&id=1bHwtofKMUy_BnAD2PiocInSRbDOzSWKy);
+    /* background-image: url(https://iotechonline.com/wp-content/uploads/2021/01/mosquitto.webp); */
+  }
+
+  .WiFi {
+    background-image: url(https://drive.google.com/uc?export=view&id=18dUrKcivXyiFDzclSiV8R_0eZ2exj7Q9);
+    /* background-image: url(https://ak.picdn.net/shutterstock/videos/26317781/thumb/10.jpg); */
+  }
+</style>
+
 <body>
-  <h2>Lectura de variables analogicas</h2>
-    <button class="button" onclick="send(1)">LED ON</button>
-  <button class="button" onclick="send(0)">LED OFF</button>
-  <h2>LED State: <span id="stateLED">NA</span></h2>
+  <div id="root"></div>
+  <script type="text/babel">
 
-
-  <span id="fecha" style="font-size:20px;"> </span>
-  <span id="reloj" >                       </span>
-
-  
-  <div id="chart-air" class="container"> </div>
-
-     <h2>
-      Temperatura: <span style="color:green" id="Tempe">0</span> <span>&#176C</span>
-      <label>   </label>
-      <label id="activo" style="background-color:green; color:white" > ON </label>
-    </h2>
-   
-    
-      <label for="Tsamp">Tiempo entre puntos:</label>
-      <select name="Tsamp" id="Tsamp" onchange="Sampling(this.value)" >
-        <option value="1">1</option>
-        <option value="5">5</option>
-        <option value="10">10</option>
-        <option value="30">30</option>
-        <option value="60">60</option>
-      </select>
-      <label> Seg </label>
+    const rootElement = document.getElementById('root')
 
 
 
-<button id="bc" class="btn limpiar" onclick="openFullscreen();">Pantalla Completa</button>
-<button id="bp" class="btn parar">Parar</button>
-<button id="bg" class="btn continuar">Continuar</button>
+    const {
+      colors,
+      CssBaseline,
+      ThemeProvider,
+      Typography,
+      Button,
+      Container,
+      createTheme,
+      Box,
+      SvgIcon,
+      Link,
+      TextField,
+      Stack,
+      Paper,
+      Grid
+    } = MaterialUI;
+    const {
+      useState
+    } = React;
 
 
 
+    // Create a theme instance.
+    const theme = createTheme({
+      palette: {
+        primary: {
+          main: "#556cd6"
+        },
+        secondary: {
+          main: "#19857b"
+        },
+        error: {
+          main: colors.red.A400
+        }
+      }
+    });
+
+
+    function LightBulbIcon(props) {
+      return (
+        <SvgIcon {...props}>
+          <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z" />
+        </SvgIcon>
+      );
+    }
+
+    function ProTip() {
+      return (
+        <Typography sx={{ mt: 6, mb: 3 }} color="text.secondary">
+          <LightBulbIcon sx={{ mr: 1, verticalAlign: "top" }} />
+          Nota: revisar en {" "}
+          <Link target="_blank" href="https://github.com/estebangf/contador-personas-iot">
+            GitHub
+          </Link>{" "}
+          para mas información.
+        </Typography>
+      );
+    }
+
+    function Copyright() {
+      return (
+        <Typography variant="body2" color="text.secondary" align="center">
+          {"Copyright © "}
+          <Link target="_blank" color="inherit" href="https://github.com/estebangf/contador-personas-iot/src/index.html">
+            Proyecto IOT
+          </Link>{" "}
+          {new Date().getFullYear()}
+          {"."}
+        </Typography>
+      );
+    }
+
+
+    function Login(params) {
+      const [user, setUser] = useState('');
+      const [password, setPassword] = useState('');
+
+      function iniciarSesion() {
+        alert(`User: ${user}\nPassword: ${password}`)
+        params.setPage("home")
+      }
+
+
+      return (
+        <Stack
+          component="form"
+          noValidate
+          autoComplete="off"
+          spacing={2}
+          sx={{ my: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Login
+          </Typography>
+          <TextField label="Usuario" variant="outlined" fullWidth value={user} onChange={e => setUser(e.target.value)} />
+          <TextField type="password" label="Contraseña" variant="outlined" fullWidth value={password} onChange={e => setPassword(e.target.value)} />
+          <Button onClick={e => iniciarSesion()}>Iniciar Sesion</Button>
+        </Stack>
+      )
+    }
+
+
+
+    function Home(params) {
+      function cerrarSesion() {
+        params.setPage("login")
+      }
+
+
+      return (
+        <Stack
+          component="form"
+          noValidate
+          autoComplete="off"
+          spacing={2}
+          sx={{ my: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Bienvenid@!!
+          </Typography>
+          <p>¿Qué desea configurar?</p>
+          <Grid container spacing={2} sx={{ width: "calc(100% - 16px)" }}>
+            <Grid item xs={6}>
+              <Paper onClick={e => params.setPage("broker")} className="Settings Broker">
+                Broker
+              </Paper>
+            </Grid>
+            <Grid item xs={6}>
+              <Paper onClick={e => params.setPage("wifi")} className="Settings WiFi">
+                WiFi
+              </Paper>
+            </Grid>
+          </Grid>
+          <Button color="error" onClick={e => cerrarSesion()}>Cerrar Sesion</Button>
+        </Stack>
+      )
+    }
+
+
+    function WiFi(params) {
+      const [ssid, setSsid] = useState('');
+      const [password, setPassword] = useState('');
+
+      function sendWiFi() {
+        alert(`Send WiFi\nSSID: ${ssid}\nPassword: ${password}`)
+      }
+
+
+      return (
+        <Stack
+          component="form"
+          noValidate
+          autoComplete="off"
+          spacing={2}
+          sx={{ my: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Configuración del WiFi
+          </Typography>
+          <TextField label="SSID" variant="outlined" fullWidth value={ssid} onChange={e => setSsid(e.target.value)} />
+          <TextField type="password" label="Contraseña" variant="outlined" fullWidth value={password} onChange={e => setPassword(e.target.value)} />
+          <Button onClick={e => sendWiFi()}>Guardar WiFi</Button>
+        </Stack>
+      )
+    }
+
+
+
+
+    function Broker(params) {
+      const [url, setUrl] = useState('');
+      const [password, setPassword] = useState('');
+
+      function sendBroker() {
+        alert(`Send Broker\nURL: ${url}\nPassword: ${password}`)
+      }
+
+
+      return (
+        <Stack
+          component="form"
+          noValidate
+          autoComplete="off"
+          spacing={2}
+          sx={{ my: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Configuración del Broker
+          </Typography>
+          <TextField label="URL" variant="outlined" fullWidth value={url} onChange={e => setUrl(e.target.value)} />
+          <TextField type="password" label="Contraseña" variant="outlined" fullWidth value={password} onChange={e => setPassword(e.target.value)} />
+          <Button onClick={e => sendBroker()}>Guardar Broker</Button>
+        </Stack>
+      )
+    }
+
+
+
+
+    function App() {
+      const [page, setPage] = useState("login");
+
+      const Pages = {
+        login: <Login setPage={setPage} />,
+        home: <Home setPage={setPage} />,
+        wifi: <WiFi setPage={setPage} />,
+        broker: <Broker setPage={setPage} />
+      }
+
+      function PageComponent() {
+        return Pages[page]
+      }
+      function HomeIcon(props) {
+        return (
+          <div className="ToHome" onClick={() => setPage("home")}>
+            <SvgIcon {...props} >
+              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </SvgIcon>
+            Home
+          </div>
+        );
+      }
+      return (
+        <Container maxWidth="sm">
+          <Paper sx={{ padding: 4 }}>
+            {page != "home" && page != "login" && <HomeIcon />}
+            <PageComponent />
+            <Box sx={{ my: 4 }}>
+              <Typography variant="h5" component="h1" gutterBottom>
+                Información
+              </Typography>
+              <ProTip />
+              <Copyright />
+            </Box>
+          </Paper>
+        </Container>
+      );
+    }
+
+    ReactDOM.render(
+      <ThemeProvider theme={theme}>
+        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+        <CssBaseline />
+        <App />
+      </ThemeProvider>,
+      document.querySelector("#root")
+    );
+  </script>
 </body>
 
-
-
-<script>
-
-
-
-var elem = document.documentElement;
-function openFullscreen() {
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.webkitRequestFullscreen) { /* Safari 
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) { /* IE11 
-    elem.msRequestFullscreen();
-  }
-}
-
-
-
-
-var mydate=new Date()
-var year=mydate.getYear()
-if (year < 1000)
-year+=1900
-var day=mydate.getDay()
-var month=mydate.getMonth()
-var daym=mydate.getDate()
-if (daym<10)
-daym="0"+daym
-var dayarray=new Array("Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado")
-var montharray=new Array("Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre",
-"Octubre","Noviembre","Diciembre")
-//document.write("<large><font color='0000FF' face='verdana'>"+dayarray[day]+" "+daym+" de "+montharray[month]+" de "+year+"</font></small>")
-document.getElementById("fecha").innerHTML = "<large><font color='0000FF' face='verdana'>"+dayarray[day]+" "+daym+" de "+montharray[month]+" de "+year+"</font></small>";
-</script>
-
-
-<script>
-
-     var continuar=1;
-     var frecuencia=1;
-     var contador=0;
-         function Sampling(val) {
-          //alert("el nuevo valor es : " + val);
-          frecuencia=parseInt(val, 10); // seteo el nuevo intervalo de muestreo
-           alert("El muestreo es: " + frecuencia.toString()+  " segundos");
-          contador=0;
-        }
-   
-
-
-
-var chartT = new Highcharts.Chart({
-  chart:{ renderTo : 'chart-air' },
-  title: { text: 'Monitor Temperatura' },
-  series: [{
-    showInLegend: false,
-    data: []
-  }],
-  plotOptions: {
-    line: { animation: false,
-      dataLabels: { enabled: false }
-    },
-    series: { color: '#059e8a' }
-  },
-  xAxis: { type: 'datetime',
-    dateTimeLabelFormats: { second: '%H:%M:%S' }
-  },
-  yAxis: {
-    title: { text: 'Conversion 12 bits' },
-    max: 4096,
-    min: 0
-  },
-  credits: { enabled: false }
-});
-
- var tempeShow;
-setInterval(function ( ) {
-  var xhttp = new XMLHttpRequest();
-  
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-        var x = (new Date()).getTime();
-         x= x- 3*3600*1000; // para Argentina
-          y = parseFloat(this.responseText);
-          tempeShow=y;
-      contador=contador+1;       
-      if((contador==frecuencia) && (continuar==1))
-      {    
-            if(chartT.series[0].data.length > 100) {
-              chartT.series[0].addPoint([x, y], true, true, true);
-            } else {
-              chartT.series[0].addPoint([x, y], true, false, true);
-            }  
-            contador=0;
-      }
-      
-    
-  }
-   };
-  xhttp.open("GET", "/readPOT", true);
-  xhttp.send();
-  document.getElementById("Tempe").innerHTML = tempeShow;
-  
- 
-  
-}, 1000 );
-
-
-
-
-    document.getElementById("bp").addEventListener("click", funcionStop);
-
-    function funcionStop() {
-        
-         var activo = document.getElementById("activo");
-        document.getElementById("activo").innerHTML = "OFF";
-         activo.style.backgroundColor="red";   
-        
-         continuar=0;      
-    }
-
-    document.getElementById("bg").addEventListener("click", funcionContinuar);
-
-    function funcionContinuar() {
-
-        var activo = document.getElementById("activo");
-        continuar=1;
-        contador=0;
-        document.getElementById("activo").innerHTML = "ON ";
-        
-        activo.style.backgroundColor="green";     
-    }
-    
-
-   </script>
-   
-
-        <script type="text/javascript">
-          function startTime(){
-          today=new Date();
-          h=today.getHours();
-          m=today.getMinutes();
-          s=today.getSeconds();
-          m=checkTime(m);
-          s=checkTime(s);
-          document.getElementById('reloj').innerHTML=h+":"+m+":"+s;
-          t=setTimeout('startTime()',500);}
-
-          function checkTime(i)
-          {if (i<10) {i="0" + i;}return i;}
-
-          window.onload=function(){startTime();}
-     </script>
-
-     <script>
-               function send(led_sts) 
-                {
-                  var xhttp = new XMLHttpRequest();
-                  xhttp.onreadystatechange = function() {
-                    if (this.readyState == 4 && this.status == 200) {
-                      document.getElementById("stateLED").innerHTML = this.responseText;
-                    }
-                  };
-                  xhttp.open("GET", "led_set?state="+led_sts, true);
-                  xhttp.send();
-              }
-
-     </script>
-
-     </html>
+</html>
 )***";
