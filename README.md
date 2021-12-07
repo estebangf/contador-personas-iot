@@ -1,12 +1,12 @@
 # Contador de ingresos y egresos IOT
 
-Como proyecto final de la **DIPLOMATURA EN PROGRAMACIÓN APLICADA AL INTERNET DE LAS COSAS (IOT)** decidimos implementar un sistema de monitoreo de ingresos y egresos a un recinto con el fin de cuantificar, informar y controlar los volumenes de personas en dicho recinto en base a una cantidad limitada por protocolos COVID u otros. 
-
+Como proyecto final de la **DIPLOMATURA EN PROGRAMACIÓN APLICADA AL INTERNET DE LAS COSAS (IOT)** decidimos implementar un sistema de monitoreo de ingresos y egresos al estacionamiento en distintas sucursales.
 ## Integrantes
 * Claudia Monte
 * Esteban Fernandez
 * Leonardo Mestritua
 * Sebastian Negri
+* Hebe Paola Temi
 
 > Somos un equipo de trabajo con diferentes conocimientos y formaciones variadas. Aprovecharemos esta oportunidad para poner a prueba nuestros conocimientos y aptitudes principalmente en el desarrollo en equipo y la colaboración continua.
 
