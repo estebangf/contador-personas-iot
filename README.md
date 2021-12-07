@@ -14,7 +14,7 @@ Como proyecto final de la **DIPLOMATURA EN PROGRAMACIÓN APLICADA AL INTERNET DE
 ## Tareas a realizar
 
 - [x] Inizialización de proyecto.
-- [x] Adeción de colaboradores.
+- [x] Adhesión de colaboradores.
 - [x] Creación de proyecto en PlatformIO.
 - [x] Creación de commit inicial.
 - [ ] Definición y realización de tareas.
