@@ -93,7 +93,11 @@ void setup()
 
 void loop()
 {
-  sensor.checkDist(DEFUMBRAL);
+  while(sensor.checkDist(DEFUMBRAL))
+  {
+    if(sensor.checkDist(DEFUMBRAL)==false)
+      clientmqtt.publish("Sebastian", "world", "1");
+  }
 
   Server.handleClient();
   vTaskDelay(10 / portTICK_RATE_MS);
