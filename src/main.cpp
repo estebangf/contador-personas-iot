@@ -4,8 +4,10 @@
 #include <WiFiClient.h>
 #include <WebServer.h>
 #include "Webpage.h"
+#include "SensorUS.h"
 
 WiFiClient client;
+SensorUS sensor;
 
 //--- Pines utilizados ---------------
 #define LEDAZUL 2 // LED azul de la placa
@@ -16,7 +18,7 @@ WiFiClient client;
 
 //--- Constantes ---------------
 const float VEL_SONIDO = 34300.0; // Velocidad del sonido en cm/s
-const float UMBRAL = 30.0;        // Umbral maximo cuando no hay persona
+const float DEFUMBRAL = 150.0;       // Umbral maximo cuando no hay persona
 const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
 //-----------------------------------------------
 
@@ -33,7 +35,7 @@ const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
 //-----------------------------------------------
 
 //--- Prototipo funciones FREERTOS -------------
-void tareaSensor(void *pvParameters);
+//void tareaSensor(void *pvParameters);
 //-----------------------------------------------
 
 //--- CONFIGURACION WIFI ------------------------
@@ -46,12 +48,14 @@ const char *DEVICE_NAME = "ESP32_THING";
 
 void setup()
 {
-
+  /*
   //--- Modo entrada/salida de los pines ----------
   pinMode(ECHO, INPUT);     // Entrada del Sensor ultrasonico
   pinMode(TRIGGER, OUTPUT); // Salida del Sensor ultrasonico
   pinMode(LEDAZUL, OUTPUT);
   //-----------------------------------------------
+  */
+  sensor.begin(TRIGGER, ECHO);
 
   //--- CONFIGURACION WIFI ------------------------
   WiFi.hostname(DEVICE_NAME);
@@ -89,11 +93,14 @@ void setup()
 
 void loop()
 {
+  sensor.checkDist(DEFUMBRAL);
+
   Server.handleClient();
   vTaskDelay(10 / portTICK_RATE_MS);
 }
 
 //--- FUNCIONES FREERTOS -------------------------
+/*
 void tareaSensor(void *pvParameters)
 {
   while (true)
@@ -108,9 +115,11 @@ void tareaSensor(void *pvParameters)
     vTaskDelay(delayOneSeccond)
   }
 }
+*/
 //-----------------------------------------------
 
 //--- FUNCIONES AUXILIARES ------------------------
+/*
 void iniciarTrigger()
 {
   // Ponemos el Triiger en estado bajo y esperamos 2 ms
@@ -124,6 +133,7 @@ void iniciarTrigger()
   // Comenzamos poniendo el pin Trigger en estado bajo
   digitalWrite(TRIGGER, LOW);
 }
+
 float calcularDistancia()
 {
   // La función pulseIn obtiene el tiempo que tarda en cambiar entre estados, en este caso a HIGH
@@ -137,6 +147,15 @@ float calcularDistancia()
   return distancia;
 }
 //-----------------------------------------------
+
+bool evaluarDistancia() 
+{
+  if(calcularDistancia>UMBRAL)
+    return true
+  else
+    return false
+}
+*/
 
 //--- FUNCIONES SERVIDOR ------------------------
 void handleRoot()

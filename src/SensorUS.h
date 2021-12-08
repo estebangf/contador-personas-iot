@@ -11,4 +11,5 @@ private:
 public:
     void begin(uint8_t trig, uint8_t echo);
     float dist();
+    bool checkDist();
 };
