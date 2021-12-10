@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <SensorUS.h>
 
-void SensorUS::begin(uint8_t trig, uint8_t echo) 
+void SensorUS::begin(uint8_t trig, uint8_t echo)
 {
+    const float VEL_SONIDO = 34300.0; // Velocidad del sonido en cm/s
     pinTrig = trig;
     pinEcho = echo;
 
@@ -23,10 +24,10 @@ float SensorUS::dist()
     return distancia;
 }
 
-bool SensorUS::checkDist(float umbral)
+boolean SensorUS::checkDist(float umbral)
 {
-    if(dist() > umbral)
-        return true
+    if (dist() > umbral)
+        return true;
     else
-        return false
+        return false;
 }
