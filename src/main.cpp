@@ -3,12 +3,19 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#include <Preferences.h>
 #include "Webpage.h"
+#include "APWebpage.h"
 
-WiFiClient client;
+// WiFiClient client;
+WiFiServer serverWifi(80);
+Preferences PrefWifi;
+Preferences PrefUser;
+Preferences PrefBroker;
+Preferences PrefEstacion;
 
 //--- Pines utilizados ---------------
-#define LEDAZUL 2 // LED azul de la placa
+#define LED_AZUL 2 // LED azul de la placa
 
 #define TRIGGER 5 // Sensor ultrasonico
 #define ECHO 6    // Sensor ultrasonico
@@ -28,8 +35,18 @@ const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
 #endif
 //-----------------------------------------------
 
-//--- Prototipos funciones SERVIDOR ------------
+//--- Prototipos funciones ------------
+void iniciarTrigger();
+float calcularDistancia();
+//-----------------------------------------------
 
+//--- Prototipos funciones SERVIDOR ------------
+void handleRoot();
+void handleLogin();
+void handleSetWifi();
+void handleSetBroker();
+void handleSetEstacion();
+void handleGetConfigs();
 //-----------------------------------------------
 
 //--- Prototipo funciones FREERTOS -------------
@@ -37,43 +54,65 @@ void tareaSensor(void *pvParameters);
 //-----------------------------------------------
 
 //--- CONFIGURACION WIFI ------------------------
-WebServer Server(80);
-const char *SSID = "Fibertel WiFi308 2.4GHz";
-const char *PASSWORD = "0041251608";
+WebServer server(80);
+const uint8_t MAX_TEST = 5;
+uint8_t testWifi = 1;
 
-const char *DEVICE_NAME = "ESP32_THING";
+const char *DEVICE_NAME = "ESP32_IOT";
 //-----------------------------------------------
 
 void setup()
 {
+  Serial.begin(115200);
+  Serial.println("ESP ENCENDIDO...");
+  PrefUser.begin("user", false);
+  PrefWifi.begin("wifi", false);
+  PrefBroker.begin("broker", false);
+  PrefEstacion.begin("estacion", false);
 
   //--- Modo entrada/salida de los pines ----------
-  pinMode(ECHO, INPUT);     // Entrada del Sensor ultrasonico
-  pinMode(TRIGGER, OUTPUT); // Salida del Sensor ultrasonico
-  pinMode(LEDAZUL, OUTPUT);
+  pinMode(LED_AZUL, OUTPUT);
   //-----------------------------------------------
+  Serial.println("PINS CONFIGURADOS...");
 
   //--- CONFIGURACION WIFI ------------------------
   WiFi.hostname(DEVICE_NAME);
   WiFi.mode(WIFI_STA);
-  WiFi.begin(SSID, PASSWORD);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED)
+  String ssidWifiPref = PrefWifi.getString("ssid", " ");
+  String passwordWifiPref = PrefWifi.getString("password", " ");
+  const char *ssidWifi = ssidWifiPref.c_str();
+  const char *passwordWifi = passwordWifiPref.c_str();
+
+  Serial.print("WIFI SSID: ");
+  Serial.println(ssidWifi);
+  Serial.print("WIFI PASSWORD: ");
+  Serial.println(passwordWifi);
+  WiFi.begin(ssidWifi, passwordWifi);
+
+  while (WiFi.waitForConnectResult() != WL_CONNECTED && testWifi < MAX_TEST)
   {
-    digitalWrite(LED, HIGH);
+    digitalWrite(LED_AZUL, HIGH);
     delay(100);
     Serial.print(".");
-    digitalWrite(LED, LOW);
+    digitalWrite(LED_AZUL, LOW);
     delay(100);
+    testWifi++;
   }
-  digitalWrite(LED, LOW);
-  IPAddress ip(192, 168, 0, 125);
-  IPAddress gateway(192, 168, 0, 1);
-  IPAddress subnet(255, 255, 255, 0);
-  IPAddress primaryDNS(8, 8, 8, 8);   //optional
-  IPAddress secondaryDNS(8, 8, 4, 4); //optional
-  WiFi.config(ip, gateway, subnet, primaryDNS, secondaryDNS);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  digitalWrite(LED_AZUL, LOW);
+  if (testWifi >= MAX_TEST)
+  {
+    digitalWrite(LED_AZUL, HIGH);
+    Serial.println("WIFI MAL CONFIGURADO...");
+    Serial.println("CREANDO AP...");
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP("AP-IOT", "iotserver");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.softAPIP());
+  }
+  else
+  {
+    Serial.println(WiFi.localIP());
+  }
   //-----------------------------------------------
 
   //--- CREACION DE TAREAS FREERTOS ---------------
@@ -81,16 +120,41 @@ void setup()
   //-----------------------------------------------
 
   //--- INICIALIZACION DEL SERVIDOR ---------------
-  Server.on("/", handleRoot);
-  Server.on("/readState", readState);
-  Server.begin();
+  server.on("/", handleRoot);
+  server.on("/login", handleLogin);
+  server.on("/setwifi", handleSetWifi);
+  server.on("/setbroker", handleSetBroker);
+  server.on("/setestacion", handleSetEstacion);
+  server.on("/getconfigs", handleGetConfigs);
+  server.begin();
+  Serial.println("HTTP server started");
+  //-----------------------------------------------
+
+  //----- BROKER ----------------------------------
+  String domainBrokerST = PrefBroker.getString("domain");
+  String usernameBrokerST = PrefBroker.getString("username");
+  String passwordBrokerST = PrefBroker.getString("password");
+
+  const char *domainBroker = domainBrokerST.c_str();
+  uint16_t portBroker = PrefBroker.getUShort("port");
+  const char *usernameBroker = usernameBrokerST.c_str();
+  const char *passwordBroker = passwordBrokerST.c_str();
+  //-----------------------------------------------
+
+  
+  //----- Estacion ----------------------------------
+  String puertaEstacionST = PrefEstacion.getString("puerta");
+
+  uint16_t sucursalEstacion = PrefEstacion.getUShort("sucursal");
+  uint16_t cupoEstacion = PrefEstacion.getUShort("cupo");
+  const char *puertaEstacion = PrefEstacion.getString("puerta").c_str();
   //-----------------------------------------------
 }
 
 void loop()
 {
-  Server.handleClient();
-  vTaskDelay(10 / portTICK_RATE_MS);
+  server.handleClient();
+  // vTaskDelay(10 / portTICK_RATE_MS);.
 }
 
 //--- FUNCIONES FREERTOS -------------------------
@@ -105,7 +169,7 @@ void tareaSensor(void *pvParameters)
     {
       // Lanzamos alertas
     }
-    vTaskDelay(delayOneSeccond)
+    vTaskDelay(delayOneSeccond);
   }
 }
 //-----------------------------------------------
@@ -141,14 +205,98 @@ float calcularDistancia()
 //--- FUNCIONES SERVIDOR ------------------------
 void handleRoot()
 {
-  server.send(200, "text/html", WebpageCode);
+  if (testWifi >= MAX_TEST)
+    server.send(200, "text/html", APWebpageCode);
+  else
+    server.send(200, "text/html", WebpageCode);
 }
-void readState()
+void handleLogin()
 {
-  String act_state = server.arg("state");
+  String username = server.arg("username");
+  String password = server.arg("password");
 
-  // CODIGO PERTINENTE...
+  if (username == PrefUser.getString("username", "admin") &&
+      password == PrefUser.getString("password", "1234"))
+  {
+    server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+  }
+  else
+  {
+    server.send(200, "text/plane", "{\"error\": \"error\",\"message\": \"Credenciales incorrectas\"}");
+  }
+}
+void handleSetWifi()
+{
+  String ssid = server.arg("ssid");
+  String password = server.arg("password");
+  PrefWifi.putString("ssid", ssid);
+  PrefWifi.putString("password", password);
 
-  server.send(200, "text/plane", state);
+  server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+  ESP.restart();
+}
+void handleSetBroker()
+{
+  String domain = server.arg("domain");
+  uint16_t port = server.arg("port").toInt();
+  String username = server.arg("username");
+  String password = server.arg("password");
+
+  PrefBroker.putString("domain", domain);
+  PrefBroker.putUShort("port", port);
+  PrefBroker.putString("username", username);
+  PrefBroker.putString("password", password);
+
+  server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+}
+void handleSetEstacion()
+{
+  uint16_t sucursal = server.arg("sucursal").toInt();
+  uint16_t cupo = server.arg("cupo").toInt();
+  String puerta = server.arg("puerta");
+
+  PrefEstacion.putUShort("sucursal", sucursal);
+  PrefEstacion.putUShort("cupo", cupo);
+  PrefEstacion.putString("puerta", puerta);
+
+  server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+}
+void handleGetConfigs()
+{
+  String section = server.arg("section");
+  String configs = "{\"message\": \"success\", \"configs\": ";
+  if (section == "broker")
+  {
+    configs += "{\"domain\":\"";
+    configs += PrefBroker.getString("domain");
+    configs += "\",\"port\":\"";
+    configs += PrefBroker.getUShort("port");
+    configs += "\",\"username\":\"";
+    configs += PrefBroker.getString("username");
+    configs += "\",\"password\":\"";
+    configs += PrefBroker.getString("password");
+    configs += "\"}";
+  }
+  else if (section == "estacion")
+  {
+    configs += "{\"sucursal\":\"";
+    configs += PrefBroker.getUShort("sucursal");
+    configs += "\",\"cupo\":\"";
+    configs += PrefBroker.getUShort("cupo");
+    configs += "\",\"puerta\":\"";
+    configs += PrefBroker.getString("puerta");
+    configs += "\"}";
+  }
+  else if (section == "wifi")
+  {
+    configs += "{\"ssid\":\"";
+    configs += PrefWifi.getString("ssid");
+    configs += "\",\"password\":\"";
+    configs += PrefWifi.getString("password");
+    configs += "\"}";
+  }
+  configs += "}";
+
+  server.send(200, "text/plane", configs);
 }
 //-----------------------------------------------
