@@ -11,27 +11,21 @@ Enlace para acceder: https://docs.google.com/document/d/17u2BmgZhg6UvPbcw8SgajFY
 Creación de Base de Datos en Máquina Virtual:
 
 Base de Datos:
+
 CONTROL_ESTACIONAMIENTO
 
 Tablas de la base de Datos y tipos de datos:
 
 
-• egresos
-id_egreso: Type (int), Null(NO), Default (NULL), AUTO_INCREMENT, KEY(PRI).
+• movimientos
 
-fecha_hora_e: Type (timestamp), Null(YES), Default (CURRENT_TIMESTAMP, DEFAULT_GENERATE.
+id_movimiento: Type (int), Null(NO), Default (NULL), AUTO_INCREMENT, KEY(PRI).
 
-id_sucursal: Type(int), Null(NO), Default(NULL).
+fecha_hora: Type (timestamp), Null(YES), Default CURRENT_TIMESTAMP, DEFAULT_GENERATE.
 
+id_sucursal: Type(int), Null(YES), Default(NULL).
 
-
-• ingresos:
-
-id_ingreso: Type(int), Null(NO), Default(NULL), AUTO_INCREMENT, KEY(PRI).
-
-fecha_hora_i: Type (timestamp), Null(YES), Default (CURRENT_TIMESTAMP, DEFAULT_GENERATE.
-
-id_sucursal: Type(int), Null(NO), Default(NULL).
+tipo: Type(varchar(15)),  Null(YES), Default(NULL).
 
 
 
@@ -39,13 +33,13 @@ id_sucursal: Type(int), Null(NO), Default(NULL).
 
 id_sucursal: Type(int), Null(NO), Default(NULL), KEY(PRI);
 
-sucursales: Varchar(100), Null(YES), Default (NULL).
+nombre: Varchar(30), Null(YES), Default (NULL).
 
 
 
 Usuario que no es root:
 
-claudia@claudiaserver:~$ mysql -u iotsuc -p
+iotserver@iotserver:~$ mysql -u iotsuc -p
 
 Password: Sucu123@
 
