@@ -8,7 +8,7 @@
 WiFiClient client;
 
 //--- Pines utilizados ---------------
-#define LEDAZUL 2 // LED azul de la placa
+#define LED_AZUL 2 // LED azul de la placa
 
 #define TRIGGER 5 // Sensor ultrasonico
 #define ECHO 6    // Sensor ultrasonico
@@ -18,6 +18,8 @@ WiFiClient client;
 const float VEL_SONIDO = 34300.0; // Velocidad del sonido en cm/s
 const float UMBRAL = 30.0;        // Umbral maximo cuando no hay persona
 const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
+
+const char *USERNAME = "admin";
 //-----------------------------------------------
 
 //--- CORE ------------------------------------
@@ -28,8 +30,18 @@ const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
 #endif
 //-----------------------------------------------
 
-//--- Prototipos funciones SERVIDOR ------------
+//--- Prototipos funciones ------------
+void iniciarTrigger();
+float calcularDistancia();
+//-----------------------------------------------
 
+//--- Prototipos funciones SERVIDOR ------------
+void handleRoot();
+void handleLogin();
+void handleSetWifi();
+void handleSetBroker();
+void handleSetEstacionamiento();
+void handleGetConfigs();
 //-----------------------------------------------
 
 //--- Prototipo funciones FREERTOS -------------
@@ -37,41 +49,43 @@ void tareaSensor(void *pvParameters);
 //-----------------------------------------------
 
 //--- CONFIGURACION WIFI ------------------------
-WebServer Server(80);
-const char *SSID = "Fibertel WiFi308 2.4GHz";
-const char *PASSWORD = "0041251608";
+WebServer server(80);
+const char *SSID = "Fernandez";
+const char *PASSWORD = "lulu2017";
 
-const char *DEVICE_NAME = "ESP32_THING";
+const char *DEVICE_NAME = "ESP32_IOT";
 //-----------------------------------------------
 
 void setup()
 {
+  Serial.begin(115200);
+  Serial.println("ESP ENCENDIDO...");
 
   //--- Modo entrada/salida de los pines ----------
-  pinMode(ECHO, INPUT);     // Entrada del Sensor ultrasonico
-  pinMode(TRIGGER, OUTPUT); // Salida del Sensor ultrasonico
-  pinMode(LEDAZUL, OUTPUT);
+  pinMode(LED_AZUL, OUTPUT);
   //-----------------------------------------------
+  Serial.println("PINS CONFIGURADOS...");
 
   //--- CONFIGURACION WIFI ------------------------
   WiFi.hostname(DEVICE_NAME);
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, PASSWORD);
+  Serial.println("WIFI CONFIGURADO...");
   while (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
-    digitalWrite(LED, HIGH);
+    digitalWrite(LED_AZUL, HIGH);
     delay(100);
     Serial.print(".");
-    digitalWrite(LED, LOW);
+    digitalWrite(LED_AZUL, LOW);
     delay(100);
   }
-  digitalWrite(LED, LOW);
-  IPAddress ip(192, 168, 0, 125);
-  IPAddress gateway(192, 168, 0, 1);
-  IPAddress subnet(255, 255, 255, 0);
-  IPAddress primaryDNS(8, 8, 8, 8);   //optional
-  IPAddress secondaryDNS(8, 8, 4, 4); //optional
-  WiFi.config(ip, gateway, subnet, primaryDNS, secondaryDNS);
+  digitalWrite(LED_AZUL, LOW);
+  // IPAddress ip(192, 168, 0, 125);
+  // IPAddress gateway(192, 168, 0, 1);
+  // IPAddress subnet(255, 255, 255, 0);
+  // IPAddress primaryDNS(8, 8, 8, 8);   //optional
+  // IPAddress secondaryDNS(8, 8, 4, 4); //optional
+  // WiFi.config(ip, gateway, subnet, primaryDNS, secondaryDNS);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   //-----------------------------------------------
@@ -81,16 +95,21 @@ void setup()
   //-----------------------------------------------
 
   //--- INICIALIZACION DEL SERVIDOR ---------------
-  Server.on("/", handleRoot);
-  Server.on("/readState", readState);
-  Server.begin();
+  server.on("/", handleRoot);
+  server.on("/login", handleLogin);
+  server.on("/setwifi", handleSetWifi);
+  server.on("/setbroker", handleSetBroker);
+  server.on("/setestacionamiento", handleSetEstacionamiento);
+  server.on("/getconfigs", handleGetConfigs);
+  server.begin();
+  Serial.println("HTTP server started");
   //-----------------------------------------------
 }
 
 void loop()
 {
-  Server.handleClient();
-  vTaskDelay(10 / portTICK_RATE_MS);
+  server.handleClient();
+  // vTaskDelay(10 / portTICK_RATE_MS);
 }
 
 //--- FUNCIONES FREERTOS -------------------------
@@ -105,7 +124,7 @@ void tareaSensor(void *pvParameters)
     {
       // Lanzamos alertas
     }
-    vTaskDelay(delayOneSeccond)
+    vTaskDelay(delayOneSeccond);
   }
 }
 //-----------------------------------------------
@@ -143,12 +162,66 @@ void handleRoot()
 {
   server.send(200, "text/html", WebpageCode);
 }
-void readState()
+void handleLogin()
 {
-  String act_state = server.arg("state");
+  String username = server.arg("username");
+  String password = server.arg("password");
 
-  // CODIGO PERTINENTE...
+  if (username == USERNAME && password == PASSWORD)
+  {
+    server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+  }
+  else
+  {
+    server.send(200, "text/plane", "{\"error\": \"error\",\"message\": \"Credenciales incorrectas\"}");
+  }
+}
+void handleSetWifi()
+{
+  String ssid = server.arg("ssid");
+  String password = server.arg("password");
 
-  server.send(200, "text/plane", state);
+  server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+}
+void handleSetBroker()
+{
+  String domain = server.arg("domain");
+  String port = server.arg("port");
+  String username = server.arg("username");
+  String password = server.arg("password");
+
+    server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+}
+void handleSetEstacionamiento()
+{
+  String sucursal = server.arg("sucursal");
+  String cupo = server.arg("cupo");
+  String puerta = server.arg("puerta");
+
+    server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+}
+void handleGetConfigs()
+{
+  String section = server.arg("section");
+  String configs = "{\"message\": \"success\", \"configs\": ";
+  if (section == "broker")
+  {
+    configs += "{\"username\":\"";
+    configs += USERNAME;
+    configs += "\",\"password\":\"";
+    configs += PASSWORD;
+    configs += "\"}";
+  }
+  else if (section == "wifi")
+  {
+    configs += "{\"ssid\":\"";
+    configs += USERNAME;
+    configs += "\",\"password\":\"";
+    configs += PASSWORD;
+    configs += "\"}";
+  }
+  configs += "}";
+
+  server.send(200, "text/plane", configs);
 }
 //-----------------------------------------------

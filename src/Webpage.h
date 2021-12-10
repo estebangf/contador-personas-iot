@@ -1,44 +1,3 @@
-/*
-//============
-//Webpage Code
-//============
-#define _GLIBCXX_USE_CXX11_ABI 0
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::ifstream;
-using std::ostringstream;
-using std::string;
-
-
-string readFileIntoString(const string &path);
-
-string readFileIntoString(const string &path)
-{
-  ifstream input_file(path);
-  if (!input_file.is_open())
-  {
-    cerr << "Could not open the file - '"
-         << path << "'" << endl;
-    exit(EXIT_FAILURE);
-  }
-  return string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>(input_file));
-}
-
-string filename("index.html");
-
-
-String webpageCode = (String)(readFileIntoString(filename).c_str());
-*/
-//============
-//Webpage Code
-//============
-
 String WebpageCode = R"***(
 <!DOCTYPE html>
 <html lang="es">
@@ -63,7 +22,8 @@ String WebpageCode = R"***(
   }
 
   body {
-    height: 100%;
+    /* height: 100%; */
+    padding: 50px 5px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -103,6 +63,11 @@ String WebpageCode = R"***(
     background-image: url(https://drive.google.com/uc?export=view&id=18dUrKcivXyiFDzclSiV8R_0eZ2exj7Q9);
     /* background-image: url(https://ak.picdn.net/shutterstock/videos/26317781/thumb/10.jpg); */
   }
+
+  .Estacionamiento {
+    background-image: url(https://drive.google.com/uc?export=view&id=18dUrKcivXyiFDzclSiV8R_0eZ2exj);
+    /* background-image: url(https://ak.picdn.net/shutterstock/videos/26317781/thumb/10.jpg); */
+  }
 </style>
 
 <body>
@@ -130,9 +95,40 @@ String WebpageCode = R"***(
       Grid
     } = MaterialUI;
     const {
-      useState
+      useState,
+      useEffect
     } = React;
 
+
+
+    function newParam(key, val) {
+      return { key, val }
+    }
+
+    function sendToServer(baseURL, params) {
+      return new Promise((resolve, reject) => {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+            const response = JSON.parse(this.responseText);
+            console.log("RESPONSE => ", response);
+            if (!!response.error) {
+              reject(response)
+            } else {
+              resolve(response)
+            }
+          }
+        };
+        let uri = baseURL + "?";
+        params.forEach((param, index) => {
+          if (index > 0) uri += "&"
+          uri += `${param.key}=${param.val}`;
+        });
+        console.log("URI => ", uri)
+        xhttp.open("GET", uri, true);
+        xhttp.send();
+      })
+    }
 
 
     // Create a theme instance.
@@ -186,13 +182,24 @@ String WebpageCode = R"***(
     }
 
 
-    function Login(params) {
-      const [user, setUser] = useState('');
+    function Login(props) {
+      const [username, setUsername] = useState('');
       const [password, setPassword] = useState('');
 
+
       function iniciarSesion() {
-        alert(`User: ${user}\nPassword: ${password}`)
-        params.setPage("home")
+        let baseURL = "login";
+        let params = [
+          newParam("username", username),
+          newParam("password", password)
+        ];
+        sendToServer(baseURL, params).then(r => {
+          console.log("R => ", r)
+          props.setPage("home")
+        }).catch(e => {
+          console.log("E => ", e)
+          alert(e.message)
+        })
       }
 
 
@@ -206,7 +213,7 @@ String WebpageCode = R"***(
           <Typography variant="h4" component="h1" gutterBottom>
             Login
           </Typography>
-          <TextField label="Usuario" variant="outlined" fullWidth value={user} onChange={e => setUser(e.target.value)} />
+          <TextField label="Usuario" variant="outlined" fullWidth value={username} onChange={e => setUsername(e.target.value)} />
           <TextField type="password" label="Contraseña" variant="outlined" fullWidth value={password} onChange={e => setPassword(e.target.value)} />
           <Button onClick={e => iniciarSesion()}>Iniciar Sesion</Button>
         </Stack>
@@ -215,9 +222,9 @@ String WebpageCode = R"***(
 
 
 
-    function Home(params) {
+    function Home(props) {
       function cerrarSesion() {
-        params.setPage("login")
+        props.setPage("login")
       }
 
 
@@ -234,12 +241,17 @@ String WebpageCode = R"***(
           <p>¿Qué desea configurar?</p>
           <Grid container spacing={2} sx={{ width: "calc(100% - 16px)" }}>
             <Grid item xs={6}>
-              <Paper onClick={e => params.setPage("broker")} className="Settings Broker">
+              <Paper onClick={e => props.setPage("estacionamiento")} className="Settings Estacionamiento">
+                Estacionamiento
+              </Paper>
+            </Grid>
+            <Grid item xs={6}>
+              <Paper onClick={e => props.setPage("broker")} className="Settings Broker">
                 Broker
               </Paper>
             </Grid>
             <Grid item xs={6}>
-              <Paper onClick={e => params.setPage("wifi")} className="Settings WiFi">
+              <Paper onClick={e => props.setPage("wifi")} className="Settings WiFi">
                 WiFi
               </Paper>
             </Grid>
@@ -250,15 +262,39 @@ String WebpageCode = R"***(
     }
 
 
-    function WiFi(params) {
+    function WiFi(props) {
       const [ssid, setSsid] = useState('');
       const [password, setPassword] = useState('');
 
       function sendWiFi() {
-        alert(`Send WiFi\nSSID: ${ssid}\nPassword: ${password}`)
+        let baseURL = "setwifi";
+        let params = [
+          newParam("ssid", ssid),
+          newParam("password", password)
+        ];
+        sendToServer(baseURL, params).then(r => {
+          console.log("R => ", r)
+          props.setPage("home")
+        }).catch(e => {
+          console.log("E => ", e)
+          alert(e.message)
+        })
       }
 
-
+      useEffect(() => {
+        let baseURL = "getconfigs";
+        let params = [
+          newParam("section", "wifi"),
+        ];
+        sendToServer(baseURL, params).then(r => {
+          console.log("R => ", r)
+          setSsid(r.configs.ssid)
+          setPassword(r.configs.password)
+        }).catch(e => {
+          console.log("E => ", e)
+          alert(e.message)
+        })
+      }, [])
       return (
         <Stack
           component="form"
@@ -279,12 +315,27 @@ String WebpageCode = R"***(
 
 
 
-    function Broker(params) {
-      const [url, setUrl] = useState('');
+    function Broker(props) {
+      const [domain, setDomain] = useState('');
+      const [port, setPort] = useState(0);
+      const [username, setUsername] = useState('');
       const [password, setPassword] = useState('');
 
       function sendBroker() {
-        alert(`Send Broker\nURL: ${url}\nPassword: ${password}`)
+        let baseURL = "setbroker";
+        let params = [
+          newParam("domain", domain),
+          newParam("port", port),
+          newParam("username", username),
+          newParam("password", password),
+        ];
+        sendToServer(baseURL, params).then(r => {
+          console.log("R => ", r)
+          props.setPage("home")
+        }).catch(e => {
+          console.log("E => ", e)
+          alert(e.message)
+        })
       }
 
 
@@ -298,14 +349,54 @@ String WebpageCode = R"***(
           <Typography variant="h4" component="h1" gutterBottom>
             Configuración del Broker
           </Typography>
-          <TextField label="URL" variant="outlined" fullWidth value={url} onChange={e => setUrl(e.target.value)} />
+          <TextField label="Domain" variant="outlined" fullWidth value={domain} onChange={e => setDomain(e.target.value)} />
+          <TextField label="PORT" variant="outlined" fullWidth value={port} onChange={e => setPort(parseInt(e.target.value))} />
+          <TextField label="Username" variant="outlined" fullWidth value={username} onChange={e => setUsername(e.target.value)} />
           <TextField type="password" label="Contraseña" variant="outlined" fullWidth value={password} onChange={e => setPassword(e.target.value)} />
           <Button onClick={e => sendBroker()}>Guardar Broker</Button>
         </Stack>
       )
     }
 
+    function Estacionamiento(props) {
+      const [sucursal, setSucursal] = useState('');
+      const [cupo, setCupo] = useState(0);
+      const [puerta, setPuerta] = useState('');
 
+      function sendBroker() {
+        let baseURL = "setestacionamiento";
+        let params = [
+          newParam("sucursal", sucursal),
+          newParam("cupo", cupo),
+          newParam("puerta", puerta),
+        ];
+        sendToServer(baseURL, params).then(r => {
+          console.log("R => ", r)
+          props.setPage("home")
+        }).catch(e => {
+          console.log("E => ", e)
+          alert(e.message)
+        })
+      }
+
+
+      return (
+        <Stack
+          component="form"
+          noValidate
+          autoComplete="off"
+          spacing={2}
+          sx={{ my: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Configuración del Broker
+          </Typography>
+          <TextField type="number" label="Sucursal" variant="outlined" fullWidth value={sucursal} onChange={e => setSucursal(parseInt(e.target.value))} />
+          <TextField type="number" label="Cupo" variant="outlined" fullWidth value={cupo} onChange={e => setCupo(parseInt(e.target.value))} />
+          <TextField label="Puerta" variant="outlined" fullWidth value={puerta} onChange={e => setPuerta(e.target.value)} />
+          <Button onClick={e => sendBroker()}>Guardar Broker</Button>
+        </Stack>
+      )
+    }
 
 
     function App() {
@@ -315,7 +406,8 @@ String WebpageCode = R"***(
         login: <Login setPage={setPage} />,
         home: <Home setPage={setPage} />,
         wifi: <WiFi setPage={setPage} />,
-        broker: <Broker setPage={setPage} />
+        broker: <Broker setPage={setPage} />,
+        estacionamiento: <Estacionamiento setPage={setPage} />
       }
 
       function PageComponent() {
