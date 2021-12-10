@@ -3,7 +3,7 @@ String WebpageCode = R"***(
 <html lang="es">
 
 <head>
-  <title>My page</title>
+  <title>Configuracion de Estacionamiento</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="initial-scale=1, width=device-width" />
   <script src="https://unpkg.com/react@latest/umd/react.production.min.js" crossorigin="anonymous"></script>
@@ -64,8 +64,8 @@ String WebpageCode = R"***(
     /* background-image: url(https://ak.picdn.net/shutterstock/videos/26317781/thumb/10.jpg); */
   }
 
-  .Estacionamiento {
-    background-image: url(https://drive.google.com/uc?export=view&id=18dUrKcivXyiFDzclSiV8R_0eZ2exj);
+  .Estacion {
+    background-image: url(https://drive.google.com/uc?export=view&id=1U81DOTpaEL3zFCqWPN1mMJE8Ed7p6gkD);
     /* background-image: url(https://ak.picdn.net/shutterstock/videos/26317781/thumb/10.jpg); */
   }
 </style>
@@ -75,8 +75,6 @@ String WebpageCode = R"***(
   <script type="text/babel">
 
     const rootElement = document.getElementById('root')
-
-
 
     const {
       colors,
@@ -92,7 +90,11 @@ String WebpageCode = R"***(
       TextField,
       Stack,
       Paper,
-      Grid
+      Grid,
+      FormControl,
+      InputLabel,
+      Select,
+      MenuItem
     } = MaterialUI;
     const {
       useState,
@@ -241,8 +243,8 @@ String WebpageCode = R"***(
           <p>¿Qué desea configurar?</p>
           <Grid container spacing={2} sx={{ width: "calc(100% - 16px)" }}>
             <Grid item xs={6}>
-              <Paper onClick={e => props.setPage("estacionamiento")} className="Settings Estacionamiento">
-                Estacionamiento
+              <Paper onClick={e => props.setPage("estacion")} className="Settings Estacion">
+                Estacion
               </Paper>
             </Grid>
             <Grid item xs={6}>
@@ -339,6 +341,22 @@ String WebpageCode = R"***(
       }
 
 
+      useEffect(() => {
+        let baseURL = "getconfigs";
+        let params = [
+          newParam("section", "broker"),
+        ];
+        sendToServer(baseURL, params).then(r => {
+          console.log("R => ", r)
+          setDomain(r.configs.domain);
+          setPort(r.configs.port);
+          setUsername(r.configs.username);
+          setPassword(r.configs.password);
+        }).catch(e => {
+          console.log("E => ", e)
+          alert(e.message)
+        })
+      }, [])
       return (
         <Stack
           component="form"
@@ -358,13 +376,13 @@ String WebpageCode = R"***(
       )
     }
 
-    function Estacionamiento(props) {
-      const [sucursal, setSucursal] = useState('');
+    function Estacion(props) {
+      const [sucursal, setSucursal] = useState(0);
       const [cupo, setCupo] = useState(0);
       const [puerta, setPuerta] = useState('');
 
       function sendBroker() {
-        let baseURL = "setestacionamiento";
+        let baseURL = "setestacion";
         let params = [
           newParam("sucursal", sucursal),
           newParam("cupo", cupo),
@@ -379,7 +397,21 @@ String WebpageCode = R"***(
         })
       }
 
-
+      useEffect(() => {
+        let baseURL = "getconfigs";
+        let params = [
+          newParam("section", "estacion"),
+        ];
+        sendToServer(baseURL, params).then(r => {
+          console.log("R => ", r)
+          setSucursal(parseInt(r.configs.sucursal))
+          setCupo(parseInt(r.configs.cupo))
+          setPuerta(r.configs.puerta)
+        }).catch(e => {
+          console.log("E => ", e)
+          alert(e.message)
+        })
+      }, [])
       return (
         <Stack
           component="form"
@@ -392,7 +424,18 @@ String WebpageCode = R"***(
           </Typography>
           <TextField type="number" label="Sucursal" variant="outlined" fullWidth value={sucursal} onChange={e => setSucursal(parseInt(e.target.value))} />
           <TextField type="number" label="Cupo" variant="outlined" fullWidth value={cupo} onChange={e => setCupo(parseInt(e.target.value))} />
-          <TextField label="Puerta" variant="outlined" fullWidth value={puerta} onChange={e => setPuerta(e.target.value)} />
+          <FormControl fullWidth>
+            <InputLabel id="label-puerta">Puerta</InputLabel>
+            <Select
+              labelId="label-puerta"
+              value={puerta}
+              label="Puerta"
+              onChange={e => setPuerta(e.target.value)}
+            >
+              <MenuItem value="ingresos">Ingreso/Entrada</MenuItem>
+              <MenuItem value="egresos">Egreso/Salida</MenuItem>
+            </Select>
+          </FormControl>
           <Button onClick={e => sendBroker()}>Guardar Broker</Button>
         </Stack>
       )
@@ -407,7 +450,7 @@ String WebpageCode = R"***(
         home: <Home setPage={setPage} />,
         wifi: <WiFi setPage={setPage} />,
         broker: <Broker setPage={setPage} />,
-        estacionamiento: <Estacionamiento setPage={setPage} />
+        estacion: <Estacion setPage={setPage} />
       }
 
       function PageComponent() {
