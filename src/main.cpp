@@ -6,25 +6,39 @@
 #include <Preferences.h>
 #include "Webpage.h"
 #include "APWebpage.h"
+#include <MQTT.h>
+#include <HTTPClient.h> 
 
-// WiFiClient client;
 WiFiServer serverWifi(80);
+WiFiClient client;
+MQTTClient clientmqtt;
+
+//--- Preferencias ------------------------------
 Preferences PrefWifi;
 Preferences PrefUser;
 Preferences PrefBroker;
 Preferences PrefEstacion;
+//-----------------------------------------------
+
+
+//--- Prototipo de Funciones --------
+void iniciarTrigger();
+float calcularDistancia();
+//-----------------------------------------------
 
 //--- Pines utilizados ---------------
 #define LED_AZUL 2 // LED azul de la placa
 
 #define TRIGGER 5 // Sensor ultrasonico
-#define ECHO 6    // Sensor ultrasonico
+#define ECHO 4    // Sensor ultrasonico
 //-----------------------------------------------
 
 //--- Constantes ---------------
 const float VEL_SONIDO = 34300.0; // Velocidad del sonido en cm/s
-const float UMBRAL = 30.0;        // Umbral maximo cuando no hay persona
+const float UMBRAL = 10.0;        // Umbral maximo cuando no hay persona
 const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
+
+unsigned long lastMillis = 0;
 //-----------------------------------------------
 
 //--- CORE ------------------------------------
@@ -60,6 +74,33 @@ uint8_t testWifi = 1;
 
 const char *DEVICE_NAME = "ESP32_IOT";
 //-----------------------------------------------
+
+//-------- Conectando el MQTT ------------------
+
+
+void connect() {
+  Serial.printf("\nconnecting....");
+  
+  String usernameBrokerST = PrefBroker.getString("username");
+  String passwordBrokerST = PrefBroker.getString("password");
+
+  const char *usernameBroker = usernameBrokerST.c_str();
+  const char *passwordBroker = passwordBrokerST.c_str();
+
+  while(!clientmqtt.connect("Broker IOT", usernameBroker, passwordBroker)) //Se conecta al broker de NodeRED con/sin usuario y pass
+  {
+    Serial.printf(".");
+    delay(1000);
+  }
+  Serial.print("\nconnected");
+  clientmqtt.subscribe("Leo"); //Poner su nombre
+}
+
+void messageReceived(String &topic, String &payload) //Recibe mensajes del topico
+{
+  Serial.println("incoming: " + topic + " - " + payload);
+}
+//--------------------------------------------------
 
 void setup()
 {
@@ -113,7 +154,6 @@ void setup()
   {
     Serial.println(WiFi.localIP());
   }
-  //-----------------------------------------------
 
   //--- CREACION DE TAREAS FREERTOS ---------------
   xTaskCreatePinnedToCore(tareaSensor, "tareaSensor", 2048, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
@@ -130,15 +170,14 @@ void setup()
   Serial.println("HTTP server started");
   //-----------------------------------------------
 
-  //----- BROKER ----------------------------------
+ //----------------CONECTANDO AL BROKER-------------------------------
   String domainBrokerST = PrefBroker.getString("domain");
-  String usernameBrokerST = PrefBroker.getString("username");
-  String passwordBrokerST = PrefBroker.getString("password");
 
   const char *domainBroker = domainBrokerST.c_str();
   uint16_t portBroker = PrefBroker.getUShort("port");
-  const char *usernameBroker = usernameBrokerST.c_str();
-  const char *passwordBroker = passwordBrokerST.c_str();
+
+  clientmqtt.begin(domainBroker, portBroker, client); //cliente mqtt
+  connect();
   //-----------------------------------------------
 
   
@@ -155,6 +194,19 @@ void loop()
 {
   server.handleClient();
   // vTaskDelay(10 / portTICK_RATE_MS);.
+
+  clientmqtt.loop(); //Actualiza el estado del cliente MQTT, si o si tiene que estar en el loop
+
+  if (!clientmqtt.connected()) //Verifica que el client está conectado
+  {
+    connect();
+  }
+
+  // publish a message roughly every second.
+  if (millis() - lastMillis > 5000) {
+    lastMillis = millis();
+    //clientmqtt.publish("Leo", "world"); //Poner su nombre
+  }
 }
 
 //--- FUNCIONES FREERTOS -------------------------
@@ -162,12 +214,11 @@ void tareaSensor(void *pvParameters)
 {
   while (true)
   {
-
     iniciarTrigger();                      // Preparamos el sensor de ultrasonidos
     float distancia = calcularDistancia(); // Obtenemos la distancia
     if (distancia < UMBRAL)                // Verificamos el umbral
     {
-      // Lanzamos alertas
+      clientmqtt.publish("Leo", "world", "musica" "river" "3");
     }
     vTaskDelay(delayOneSeccond);
   }
@@ -200,7 +251,6 @@ float calcularDistancia()
 
   return distancia;
 }
-//-----------------------------------------------
 
 //--- FUNCIONES SERVIDOR ------------------------
 void handleRoot()
