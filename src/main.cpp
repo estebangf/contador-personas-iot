@@ -4,10 +4,11 @@
 #include <WiFiClient.h>
 #include <WebServer.h>
 #include <Preferences.h>
+#include <MQTT.h>
+#include <HTTPClient.h>
 #include "Webpage.h"
 #include "APWebpage.h"
-#include <MQTT.h>
-#include <HTTPClient.h> 
+#include "SensorUS.h"
 
 WiFiServer serverWifi(80);
 WiFiClient client;
@@ -20,10 +21,13 @@ Preferences PrefBroker;
 Preferences PrefEstacion;
 //-----------------------------------------------
 
-
 //--- Prototipo de Funciones --------
 void iniciarTrigger();
 float calcularDistancia();
+//-----------------------------------------------
+
+//--- Sensor Ultra Sonico --------
+SensorUS sensor;
 //-----------------------------------------------
 
 //--- Pines utilizados ---------------
@@ -34,8 +38,7 @@ float calcularDistancia();
 //-----------------------------------------------
 
 //--- Constantes ---------------
-const float VEL_SONIDO = 34300.0; // Velocidad del sonido en cm/s
-const float UMBRAL = 10.0;        // Umbral maximo cuando no hay persona
+const float DEFUMBRAL = 150.0; // Umbral maximo cuando no hay persona
 const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
 
 unsigned long lastMillis = 0;
@@ -64,7 +67,7 @@ void handleGetConfigs();
 //-----------------------------------------------
 
 //--- Prototipo funciones FREERTOS -------------
-void tareaSensor(void *pvParameters);
+//void tareaSensor(void *pvParameters);
 //-----------------------------------------------
 
 //--- CONFIGURACION WIFI ------------------------
@@ -77,17 +80,17 @@ const char *DEVICE_NAME = "ESP32_IOT";
 
 //-------- Conectando el MQTT ------------------
 
-
-void connect() {
+void connect()
+{
   Serial.printf("\nconnecting....");
-  
+
   String usernameBrokerST = PrefBroker.getString("username");
   String passwordBrokerST = PrefBroker.getString("password");
 
   const char *usernameBroker = usernameBrokerST.c_str();
   const char *passwordBroker = passwordBrokerST.c_str();
 
-  while(!clientmqtt.connect("Broker IOT", usernameBroker, passwordBroker)) //Se conecta al broker de NodeRED con/sin usuario y pass
+  while (!clientmqtt.connect("Broker IOT", usernameBroker, passwordBroker)) //Se conecta al broker de NodeRED con/sin usuario y pass
   {
     Serial.printf(".");
     delay(1000);
@@ -102,6 +105,10 @@ void messageReceived(String &topic, String &payload) //Recibe mensajes del topic
 }
 //--------------------------------------------------
 
+const char *sucursalEstacion;
+uint16_t cupoEstacion;
+const char *puertaEstacion;
+
 void setup()
 {
   Serial.begin(115200);
@@ -110,6 +117,8 @@ void setup()
   PrefWifi.begin("wifi", false);
   PrefBroker.begin("broker", false);
   PrefEstacion.begin("estacion", false);
+
+  sensor.begin(TRIGGER, ECHO);
 
   //--- Modo entrada/salida de los pines ----------
   pinMode(LED_AZUL, OUTPUT);
@@ -156,7 +165,7 @@ void setup()
   }
 
   //--- CREACION DE TAREAS FREERTOS ---------------
-  xTaskCreatePinnedToCore(tareaSensor, "tareaSensor", 2048, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
+  // xTaskCreatePinnedToCore(tareaSensor, "tareaSensor", 2048, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
   //-----------------------------------------------
 
   //--- INICIALIZACION DEL SERVIDOR ---------------
@@ -170,7 +179,7 @@ void setup()
   Serial.println("HTTP server started");
   //-----------------------------------------------
 
- //----------------CONECTANDO AL BROKER-------------------------------
+  //----------------CONECTANDO AL BROKER-------------------------------
   String domainBrokerST = PrefBroker.getString("domain");
 
   const char *domainBroker = domainBrokerST.c_str();
@@ -180,20 +189,19 @@ void setup()
   connect();
   //-----------------------------------------------
 
-  
   //----- Estacion ----------------------------------
   String puertaEstacionST = PrefEstacion.getString("puerta");
+  String sucursalEstacionST = PrefEstacion.getString("sucursal");
 
-  uint16_t sucursalEstacion = PrefEstacion.getUShort("sucursal");
-  uint16_t cupoEstacion = PrefEstacion.getUShort("cupo");
-  const char *puertaEstacion = PrefEstacion.getString("puerta").c_str();
+  sucursalEstacion = sucursalEstacionST.c_str();
+  cupoEstacion = PrefEstacion.getUShort("cupo");
+  puertaEstacion = puertaEstacionST.c_str();
   //-----------------------------------------------
 }
 
 void loop()
 {
   server.handleClient();
-  // vTaskDelay(10 / portTICK_RATE_MS);.
 
   clientmqtt.loop(); //Actualiza el estado del cliente MQTT, si o si tiene que estar en el loop
 
@@ -203,13 +211,22 @@ void loop()
   }
 
   // publish a message roughly every second.
-  if (millis() - lastMillis > 5000) {
+  if (millis() - lastMillis > 5000)
+  {
     lastMillis = millis();
     //clientmqtt.publish("Leo", "world"); //Poner su nombre
   }
+  while (sensor.checkDist(DEFUMBRAL))
+  {
+    if (sensor.checkDist(DEFUMBRAL) == false)
+      clientmqtt.publish(puertaEstacion, sucursalEstacion);
+  }
+
+  // vTaskDelay(10 / portTICK_RATE_MS);.
 }
 
 //--- FUNCIONES FREERTOS -------------------------
+/*
 void tareaSensor(void *pvParameters)
 {
   while (true)
@@ -223,9 +240,11 @@ void tareaSensor(void *pvParameters)
     vTaskDelay(delayOneSeccond);
   }
 }
+*/
 //-----------------------------------------------
 
 //--- FUNCIONES AUXILIARES ------------------------
+/*
 void iniciarTrigger()
 {
   // Ponemos el Triiger en estado bajo y esperamos 2 ms
@@ -239,6 +258,7 @@ void iniciarTrigger()
   // Comenzamos poniendo el pin Trigger en estado bajo
   digitalWrite(TRIGGER, LOW);
 }
+
 float calcularDistancia()
 {
   // La función pulseIn obtiene el tiempo que tarda en cambiar entre estados, en este caso a HIGH
@@ -251,6 +271,15 @@ float calcularDistancia()
 
   return distancia;
 }
+
+bool evaluarDistancia() 
+{
+  if(calcularDistancia>UMBRAL)
+    return true
+  else
+    return false
+}
+*/
 
 //--- FUNCIONES SERVIDOR ------------------------
 void handleRoot()
@@ -268,7 +297,7 @@ void handleLogin()
   if (username == PrefUser.getString("username", "admin") &&
       password == PrefUser.getString("password", "1234"))
   {
-    server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+    server.send(200, "text/plane", "{\"message\": \"Bienvenid@\"}");
   }
   else
   {
@@ -282,7 +311,7 @@ void handleSetWifi()
   PrefWifi.putString("ssid", ssid);
   PrefWifi.putString("password", password);
 
-  server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+  server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
   ESP.restart();
 }
 void handleSetBroker()
@@ -297,19 +326,22 @@ void handleSetBroker()
   PrefBroker.putString("username", username);
   PrefBroker.putString("password", password);
 
-  server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+  clientmqtt.begin(domainBroker, portBroker, client); //cliente mqtt
+  connect();
+
+  server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
 }
 void handleSetEstacion()
 {
-  uint16_t sucursal = server.arg("sucursal").toInt();
+  String sucursal = server.arg("sucursal");
   uint16_t cupo = server.arg("cupo").toInt();
   String puerta = server.arg("puerta");
 
-  PrefEstacion.putUShort("sucursal", sucursal);
+  PrefEstacion.putString("sucursal", sucursal);
   PrefEstacion.putUShort("cupo", cupo);
   PrefEstacion.putString("puerta", puerta);
 
-  server.send(200, "text/plane", "{\"message\": \"succcess\"}");
+  server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
 }
 void handleGetConfigs()
 {
@@ -330,11 +362,11 @@ void handleGetConfigs()
   else if (section == "estacion")
   {
     configs += "{\"sucursal\":\"";
-    configs += PrefBroker.getUShort("sucursal");
+    configs += PrefEstacion.getString("sucursal");
     configs += "\",\"cupo\":\"";
-    configs += PrefBroker.getUShort("cupo");
+    configs += PrefEstacion.getUShort("cupo");
     configs += "\",\"puerta\":\"";
-    configs += PrefBroker.getString("puerta");
+    configs += PrefEstacion.getString("puerta");
     configs += "\"}";
   }
   else if (section == "wifi")
