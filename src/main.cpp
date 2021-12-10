@@ -34,7 +34,7 @@ SensorUS sensor;
 #define LED_AZUL 2 // LED azul de la placa
 
 #define TRIGGER 5 // Sensor ultrasonico
-#define ECHO 4    // Sensor ultrasonico
+#define ECHO 18    // Sensor ultrasonico
 //-----------------------------------------------
 
 //--- Constantes ---------------
