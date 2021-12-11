@@ -26,7 +26,7 @@ float SensorUS::dist()
 
 boolean SensorUS::checkDist(float umbral)
 {
-    if (dist() > umbral)
+    if (dist() < umbral)
         return true;
     else
         return false;

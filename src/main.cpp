@@ -19,6 +19,12 @@ Preferences PrefWifi;
 Preferences PrefUser;
 Preferences PrefBroker;
 Preferences PrefEstacion;
+
+const char *domainBroker;
+uint16_t portBroker;
+const char *usernameBroker;
+const char *passwordBroker;
+uint16_t cupoEstacion;
 //-----------------------------------------------
 
 //--- Prototipo de Funciones --------
@@ -34,11 +40,11 @@ SensorUS sensor;
 #define LED_AZUL 2 // LED azul de la placa
 
 #define TRIGGER 5 // Sensor ultrasonico
-#define ECHO 18    // Sensor ultrasonico
+#define ECHO 18   // Sensor ultrasonico
 //-----------------------------------------------
 
 //--- Constantes ---------------
-const float DEFUMBRAL = 150.0; // Umbral maximo cuando no hay persona
+const float UMBRAL = 150.0; // Umbral maximo cuando no hay persona
 const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
 
 unsigned long lastMillis = 0;
@@ -67,7 +73,7 @@ void handleGetConfigs();
 //-----------------------------------------------
 
 //--- Prototipo funciones FREERTOS -------------
-//void tareaSensor(void *pvParameters);
+void tareaSensor(void *pvParameters);
 //-----------------------------------------------
 
 //--- CONFIGURACION WIFI ------------------------
@@ -79,22 +85,25 @@ const char *DEVICE_NAME = "ESP32_IOT";
 //-----------------------------------------------
 
 //-------- Conectando el MQTT ------------------
+uint8_t testMQTT = 1;
 
 void connect()
 {
-  Serial.printf("\nconnecting....");
+  Serial.println("\nconnecting....");
 
-  String usernameBrokerST = PrefBroker.getString("username");
-  String passwordBrokerST = PrefBroker.getString("password");
+  Serial.print("usernameBroker: ");
+  Serial.println(usernameBroker);
+  Serial.print("passwordBroker: ");
+  Serial.println(passwordBroker);
 
-  const char *usernameBroker = usernameBrokerST.c_str();
-  const char *passwordBroker = passwordBrokerST.c_str();
-
-  while (!clientmqtt.connect("Broker IOT", usernameBroker, passwordBroker)) //Se conecta al broker de NodeRED con/sin usuario y pass
+  while (testMQTT < MAX_TEST && !clientmqtt.connect("Broker IOT", usernameBroker, passwordBroker)) //Se conecta al broker de NodeRED con/sin usuario y pass
   {
-    Serial.printf(".");
-    delay(1000);
+    testMQTT++;
+    Serial.print(".");
+    Serial.print(testMQTT);
+    delay(500);
   }
+  testMQTT = 1;
   Serial.print("\nconnected");
   clientmqtt.subscribe("Leo"); //Poner su nombre
 }
@@ -104,10 +113,6 @@ void messageReceived(String &topic, String &payload) //Recibe mensajes del topic
   Serial.println("incoming: " + topic + " - " + payload);
 }
 //--------------------------------------------------
-
-const char *sucursalEstacion;
-uint16_t cupoEstacion;
-const char *puertaEstacion;
 
 void setup()
 {
@@ -165,7 +170,7 @@ void setup()
   }
 
   //--- CREACION DE TAREAS FREERTOS ---------------
-  // xTaskCreatePinnedToCore(tareaSensor, "tareaSensor", 2048, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
+  xTaskCreatePinnedToCore(tareaSensor, "tareaSensor", 2048, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
   //-----------------------------------------------
 
   //--- INICIALIZACION DEL SERVIDOR ---------------
@@ -181,21 +186,26 @@ void setup()
 
   //----------------CONECTANDO AL BROKER-------------------------------
   String domainBrokerST = PrefBroker.getString("domain");
+  String usernameBrokerST = PrefBroker.getString("username");
+  String passwordBrokerST = PrefBroker.getString("password");
 
-  const char *domainBroker = domainBrokerST.c_str();
-  uint16_t portBroker = PrefBroker.getUShort("port");
+  domainBroker = domainBrokerST.c_str();
+  portBroker = PrefBroker.getUShort("port");
+  usernameBroker = usernameBrokerST.c_str();
+  passwordBroker = passwordBrokerST.c_str();
 
   clientmqtt.begin(domainBroker, portBroker, client); //cliente mqtt
-  connect();
+  if (testWifi < MAX_TEST)
+    connect();
   //-----------------------------------------------
 
   //----- Estacion ----------------------------------
-  String puertaEstacionST = PrefEstacion.getString("puerta");
-  String sucursalEstacionST = PrefEstacion.getString("sucursal");
+  // String puertaEstacionST = PrefEstacion.getString("puerta");
+  // String sucursalEstacionST = PrefEstacion.getString("sucursal");
 
-  sucursalEstacion = sucursalEstacionST.c_str();
+  // sucursalEstacion = sucursalEstacionST.c_str();
   cupoEstacion = PrefEstacion.getUShort("cupo");
-  puertaEstacion = puertaEstacionST.c_str();
+  // puertaEstacion = puertaEstacionST.c_str();
   //-----------------------------------------------
 }
 
@@ -205,81 +215,35 @@ void loop()
 
   clientmqtt.loop(); //Actualiza el estado del cliente MQTT, si o si tiene que estar en el loop
 
-  if (!clientmqtt.connected()) //Verifica que el client está conectado
-  {
-    connect();
-  }
-
-  // publish a message roughly every second.
-  if (millis() - lastMillis > 5000)
-  {
-    lastMillis = millis();
-    //clientmqtt.publish("Leo", "world"); //Poner su nombre
-  }
-  while (sensor.checkDist(DEFUMBRAL))
-  {
-    if (sensor.checkDist(DEFUMBRAL) == false)
-      clientmqtt.publish(puertaEstacion, sucursalEstacion);
-  }
-
-  // vTaskDelay(10 / portTICK_RATE_MS);.
+  if (testWifi < MAX_TEST)
+    if (!clientmqtt.connected()) //Verifica que el client está conectado
+    {
+      connect();
+    }
 }
 
 //--- FUNCIONES FREERTOS -------------------------
-/*
 void tareaSensor(void *pvParameters)
 {
+  boolean detectAuto = false;
   while (true)
   {
-    iniciarTrigger();                      // Preparamos el sensor de ultrasonidos
-    float distancia = calcularDistancia(); // Obtenemos la distancia
-    if (distancia < UMBRAL)                // Verificamos el umbral
+    detectAuto = sensor.checkDist(UMBRAL);
+    while (detectAuto)
     {
-      clientmqtt.publish("Leo", "world", "musica" "river" "3");
+      detectAuto = sensor.checkDist(UMBRAL);
+      if (!detectAuto)
+      {
+        clientmqtt.publish(
+            PrefEstacion.getString("puerta").c_str(),
+            PrefEstacion.getString("sucursal").c_str());
+      }
+      vTaskDelay(delayOneSeccond);
     }
     vTaskDelay(delayOneSeccond);
   }
 }
-*/
 //-----------------------------------------------
-
-//--- FUNCIONES AUXILIARES ------------------------
-/*
-void iniciarTrigger()
-{
-  // Ponemos el Triiger en estado bajo y esperamos 2 ms
-  digitalWrite(TRIGGER, LOW);
-  delayMicroseconds(2);
-
-  // Ponemos el pin Trigger a estado alto y esperamos 10 ms
-  digitalWrite(TRIGGER, HIGH);
-  delayMicroseconds(10);
-
-  // Comenzamos poniendo el pin Trigger en estado bajo
-  digitalWrite(TRIGGER, LOW);
-}
-
-float calcularDistancia()
-{
-  // La función pulseIn obtiene el tiempo que tarda en cambiar entre estados, en este caso a HIGH
-  unsigned long tiempo = pulseIn(ECHO, HIGH);
-
-  // Obtenemos la distancia en cm, hay que convertir el tiempo en segudos ya que está en microsegundos
-  // por eso se multiplica por 0.000001
-  float distancia = tiempo * 0.000001 * VEL_SONIDO / 2.0;
-  vTaskDelay(delayOneSeccond / 2);
-
-  return distancia;
-}
-
-bool evaluarDistancia() 
-{
-  if(calcularDistancia>UMBRAL)
-    return true
-  else
-    return false
-}
-*/
 
 //--- FUNCIONES SERVIDOR ------------------------
 void handleRoot()
