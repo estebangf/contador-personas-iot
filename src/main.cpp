@@ -326,10 +326,9 @@ void handleSetBroker()
   PrefBroker.putString("username", username);
   PrefBroker.putString("password", password);
 
-  clientmqtt.begin(domainBroker, portBroker, client); //cliente mqtt
-  connect();
-
   server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
+
+  ESP.restart();
 }
 void handleSetEstacion()
 {
@@ -342,6 +341,8 @@ void handleSetEstacion()
   PrefEstacion.putString("puerta", puerta);
 
   server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
+
+  ESP.restart();
 }
 void handleGetConfigs()
 {
