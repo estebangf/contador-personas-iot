@@ -68,6 +68,10 @@ String WebpageCode = R"***(
     background-image: url(https://drive.google.com/uc?export=view&id=1U81DOTpaEL3zFCqWPN1mMJE8Ed7p6gkD);
     /* background-image: url(https://ak.picdn.net/shutterstock/videos/26317781/thumb/10.jpg); */
   }
+
+  .MuiDialog-paper {
+    padding: 50px;
+  }
 </style>
 
 <body>
@@ -94,7 +98,9 @@ String WebpageCode = R"***(
       FormControl,
       InputLabel,
       Select,
-      MenuItem
+      MenuItem,
+      Dialog,
+      CircularProgress
     } = MaterialUI;
     const {
       useState,
@@ -195,12 +201,14 @@ String WebpageCode = R"***(
           newParam("username", username),
           newParam("password", password)
         ];
+        props.setLoading(true);
         sendToServer(baseURL, params).then(r => {
           console.log("R => ", r)
           props.setPage("home")
         }).catch(e => {
           console.log("E => ", e)
           alert(e.message)
+          props.setLoading(false);
         })
       }
 
@@ -229,6 +237,9 @@ String WebpageCode = R"***(
         props.setPage("login")
       }
 
+      useEffect(() => {
+        props.setLoading(false)
+      }, [])
 
       return (
         <Stack
@@ -274,12 +285,17 @@ String WebpageCode = R"***(
           newParam("ssid", ssid),
           newParam("password", password)
         ];
+        props.setLoading(true);
         sendToServer(baseURL, params).then(r => {
-          console.log("R => ", r)
-          props.setPage("home")
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+          // console.log("R => ", r)
+          // props.setPage("home")
         }).catch(e => {
           console.log("E => ", e)
           alert(e.message)
+          props.setLoading(false);
         })
       }
 
@@ -295,6 +311,7 @@ String WebpageCode = R"***(
         }).catch(e => {
           console.log("E => ", e)
           alert(e.message)
+          props.setLoading(false);
         })
       }, [])
       return (
@@ -331,12 +348,17 @@ String WebpageCode = R"***(
           newParam("username", username),
           newParam("password", password),
         ];
+        props.setLoading(true);
         sendToServer(baseURL, params).then(r => {
-          console.log("R => ", r)
-          props.setPage("home")
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+          // console.log("R => ", r)
+          // props.setPage("home")
         }).catch(e => {
           console.log("E => ", e)
           alert(e.message)
+          props.setLoading(false);
         })
       }
 
@@ -355,6 +377,7 @@ String WebpageCode = R"***(
         }).catch(e => {
           console.log("E => ", e)
           alert(e.message)
+          props.setLoading(false);
         })
       }, [])
       return (
@@ -388,12 +411,17 @@ String WebpageCode = R"***(
           newParam("cupo", cupo),
           newParam("puerta", puerta),
         ];
+        props.setLoading(true);
         sendToServer(baseURL, params).then(r => {
-          console.log("R => ", r)
-          props.setPage("home")
+          setTimeout(() => {
+            location.reload();
+          }, 1500);
+          // console.log("R => ", r)
+          // props.setPage("home")
         }).catch(e => {
           console.log("E => ", e)
           alert(e.message)
+          props.setLoading(false);
         })
       }
 
@@ -410,6 +438,7 @@ String WebpageCode = R"***(
         }).catch(e => {
           console.log("E => ", e)
           alert(e.message)
+          props.setLoading(false);
         })
       }, [])
       return (
@@ -444,13 +473,14 @@ String WebpageCode = R"***(
 
     function App() {
       const [page, setPage] = useState("login");
+      const [loading, setLoading] = useState(false);
 
       const Pages = {
-        login: <Login setPage={setPage} />,
-        home: <Home setPage={setPage} />,
-        wifi: <WiFi setPage={setPage} />,
-        broker: <Broker setPage={setPage} />,
-        estacion: <Estacion setPage={setPage} />
+        login: <Login setPage={setPage} setLoading={setLoading} />,
+        home: <Home setPage={setPage} setLoading={setLoading} />,
+        wifi: <WiFi setPage={setPage} setLoading={setLoading} />,
+        broker: <Broker setPage={setPage} setLoading={setLoading} />,
+        estacion: <Estacion setPage={setPage} setLoading={setLoading} />
       }
 
       function PageComponent() {
@@ -479,6 +509,9 @@ String WebpageCode = R"***(
               <Copyright />
             </Box>
           </Paper>
+          <Dialog open={loading}>
+            <CircularProgress />
+          </Dialog>
         </Container>
       );
     }

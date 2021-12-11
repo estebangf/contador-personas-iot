@@ -13,46 +13,52 @@ Como proyecto final de la **DIPLOMATURA EN PROGRAMACIÓN APLICADA AL INTERNET DE
 
 ## Tareas a realizar
 
-- [x] Inizialización de proyecto.
-- [x] Adhesión de colaboradores.
-- [x] Creación de proyecto en PlatformIO.
-- [x] Creación de commit inicial.
-- [ ] Definición y realización de tareas.
+:heavy_check_mark: Inizialización de proyecto.
+:heavy_check_mark: Adhesión de colaboradores.
+:heavy_check_mark: Creación de proyecto en PlatformIO.
+:heavy_check_mark: Creación de commit inicial.
+:heavy_check_mark: Definición y realización de tareas.
 
 
 # Tareas
 
 A medida que avanzemos iremos añadiendo, borrando o modificando las tareas según el avance del proyecto.
 - Crear Funciones o tareas:
-- [ ] Actuador de ultrasonido.
-- [ ] Medidor de distancia.
-- [ ] Detector de ingreso.
-- [ ] Detector de egreso.
-- [ ] Contador de evento (ingreso o egreso).
-- [ ] Actuador de alarmas o señales vigia (cupo completo o incompleto).
-- [ ] Conexión MQTT.
-- [ ] Conexión WiFi modo Station.
-- [ ] Ingreso de credenciales MQTT via WEB.
-- [ ] Envio de datos a Broker MQTT.
-- [ ] Recepción de datos desde Broker MQTT.
+:heavy_check_mark: Actuador de ultrasonido.
+:heavy_check_mark: Medidor de distancia.
+:heavy_check_mark: Detector de ingreso.
+:heavy_check_mark: Detector de egreso.
+:heavy_check_mark: Contador de evento (ingreso o egreso).
+:heavy_check_mark: Actuador de alarmas o señales vigia (cupo completo o incompleto).
+:heavy_check_mark: Conexión MQTT.
+:heavy_check_mark: Conexión WiFi modo Station.
+:heavy_check_mark: Ingreso de credenciales MQTT via WEB.
+:heavy_check_mark: Envio de datos a Broker MQTT.
+:heavy_check_mark: Recepción de datos desde Broker MQTT.
 
 - Node Red:
-- [ ] Inicialización del Broker MQTT.
-- [ ] Inicialización de conexion a Base de Datos MySQL.
-- [ ] Función de recepcion de datos.
-- [ ] Formateo de datos.
-- [ ] Envio de datos a MySQL.
-- [ ] Envio de datos a Dashboard.
-- [ ] Recepción de datos de Dashboard.
-- [ ] Función de envio de datos a los Nodos.
-- [ ] Función de formateo de datos para los Nodos.
+:heavy_check_mark: Inicialización del Broker MQTT.
+:heavy_check_mark: Inicialización de conexion a Base de Datos MySQL.
+:heavy_check_mark: Función de recepcion de datos.
+:heavy_check_mark: Formateo de datos.
+:heavy_check_mark: Envio de datos a MySQL.
+:x: Envio de datos a Dashboard.
+:x: Recepción de datos de Dashboard.
+:heavy_check_mark: Función de envio de datos a los Nodos.
+:heavy_check_mark: Función de formateo de datos para los Nodos.
 
 - Base de datos MySQL:
-- [ ] Creacion e implementacion en servidor.
-- [ ] Creación de usuario de escritura.
-- [ ] Creación de usuario de lectura.
-- [ ] Creación de tabla.
-- [ ] Definición de modelos o entidades de datos.
+:heavy_check_mark: Creacion e implementacion en servidor.
+:heavy_check_mark: Creación de usuario de escritura.
+:x: Creación de usuario de lectura.
+:heavy_check_mark: Creación de tabla.
+:heavy_check_mark: Definición de modelos o entidades de datos.
+
+- Graphana:
+:heavy_check_mark: Modificacion de usuario admin.
+:heavy_check_mark: Creación de usuario publico.
+:heavy_check_mark: Creación panel de graficos.
+:heavy_check_mark: Creación de query para graficos.
 
 > Coordinaremos las tareas a realizar por medio de los diferentes medios de comunicación disponibles.
 Se realizará cada tarea en un branch diferente o al menos en el bramch especifico de quien la realiza y, una vez finalizada, se informará marcandola aquí mismo.

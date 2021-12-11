@@ -46,6 +46,7 @@ SensorUS sensor;
 //--- Constantes ---------------
 const float UMBRAL = 150.0; // Umbral maximo cuando no hay persona
 const portTickType delayOneSeccond = 1000 / portTICK_RATE_MS;
+const portTickType delayMedSeccond = 500 / portTICK_RATE_MS;
 
 unsigned long lastMillis = 0;
 //-----------------------------------------------
@@ -74,6 +75,7 @@ void handleGetConfigs();
 
 //--- Prototipo funciones FREERTOS -------------
 void tareaSensor(void *pvParameters);
+void tareaAlerta(void *pvParameters);
 //-----------------------------------------------
 
 //--- CONFIGURACION WIFI ------------------------
@@ -87,15 +89,11 @@ const char *DEVICE_NAME = "ESP32_IOT";
 //-------- Conectando el MQTT ------------------
 uint8_t testMQTT = 1;
 
+uint16_t total = 0;
+
 void connect()
 {
   Serial.println("\nconnecting....");
-
-  Serial.print("usernameBroker: ");
-  Serial.println(usernameBroker);
-  Serial.print("passwordBroker: ");
-  Serial.println(passwordBroker);
-
   while (testMQTT < MAX_TEST && !clientmqtt.connect("Broker IOT", usernameBroker, passwordBroker)) //Se conecta al broker de NodeRED con/sin usuario y pass
   {
     testMQTT++;
@@ -103,14 +101,14 @@ void connect()
     Serial.print(testMQTT);
     delay(500);
   }
-  testMQTT = 1;
   Serial.print("\nconnected");
-  clientmqtt.subscribe("Leo"); //Poner su nombre
+  clientmqtt.subscribe("total_" + PrefEstacion.getString("sucursal"));
 }
 
 void messageReceived(String &topic, String &payload) //Recibe mensajes del topico
 {
   Serial.println("incoming: " + topic + " - " + payload);
+  total = payload.toInt();
 }
 //--------------------------------------------------
 
@@ -171,6 +169,7 @@ void setup()
 
   //--- CREACION DE TAREAS FREERTOS ---------------
   xTaskCreatePinnedToCore(tareaSensor, "tareaSensor", 2048, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
+  xTaskCreatePinnedToCore(tareaAlerta, "tareaAlerta", 2048, NULL, 1, NULL, ARDUINO_RUNNING_CORE);
   //-----------------------------------------------
 
   //--- INICIALIZACION DEL SERVIDOR ---------------
@@ -197,6 +196,7 @@ void setup()
   clientmqtt.begin(domainBroker, portBroker, client); //cliente mqtt
   if (testWifi < MAX_TEST)
     connect();
+  clientmqtt.onMessage(messageReceived);
   //-----------------------------------------------
 
   //----- Estacion ----------------------------------
@@ -216,7 +216,7 @@ void loop()
   clientmqtt.loop(); //Actualiza el estado del cliente MQTT, si o si tiene que estar en el loop
 
   if (testWifi < MAX_TEST)
-    if (!clientmqtt.connected()) //Verifica que el client está conectado
+    if (!clientmqtt.connected() && testMQTT < MAX_TEST) //Verifica que el client está conectado
     {
       connect();
     }
@@ -241,6 +241,19 @@ void tareaSensor(void *pvParameters)
       vTaskDelay(delayOneSeccond);
     }
     vTaskDelay(delayOneSeccond);
+  }
+}
+void tareaAlerta(void *pvParameters)
+{
+  while (true)
+  {
+    if (total > cupoEstacion - 5)
+    {
+      digitalWrite(LED_AZUL, HIGH);
+      vTaskDelay(delayMedSeccond);
+      digitalWrite(LED_AZUL, LOW);
+    }
+    vTaskDelay(delayMedSeccond);
   }
 }
 //-----------------------------------------------
@@ -276,6 +289,7 @@ void handleSetWifi()
   PrefWifi.putString("password", password);
 
   server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
+  delay(500);
   ESP.restart();
 }
 void handleSetBroker()
@@ -292,6 +306,7 @@ void handleSetBroker()
 
   server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
 
+  delay(500);
   ESP.restart();
 }
 void handleSetEstacion()
@@ -306,6 +321,7 @@ void handleSetEstacion()
 
   server.send(200, "text/plane", "{\"message\": \"Configuracion guardada\"}");
 
+  delay(500);
   ESP.restart();
 }
 void handleGetConfigs()
