@@ -13,52 +13,52 @@ Como proyecto final de la **DIPLOMATURA EN PROGRAMACIÓN APLICADA AL INTERNET DE
 
 ## Tareas a realizar
 
-:heavy_check_mark: Inizialización de proyecto.
-:heavy_check_mark: Adhesión de colaboradores.
-:heavy_check_mark: Creación de proyecto en PlatformIO.
-:heavy_check_mark: Creación de commit inicial.
-:heavy_check_mark: Definición y realización de tareas.
+:heavy_check_mark: Inizialización de proyecto.<br />
+:heavy_check_mark: Adhesión de colaboradores.<br />
+:heavy_check_mark: Creación de proyecto en PlatformIO.<br />
+:heavy_check_mark: Creación de commit inicial.<br />
+:heavy_check_mark: Definición y realización de tareas.<br />
 
 
 # Tareas
 
 A medida que avanzemos iremos añadiendo, borrando o modificando las tareas según el avance del proyecto.
-- Crear Funciones o tareas:
-:heavy_check_mark: Actuador de ultrasonido.
-:heavy_check_mark: Medidor de distancia.
-:heavy_check_mark: Detector de ingreso.
-:heavy_check_mark: Detector de egreso.
-:heavy_check_mark: Contador de evento (ingreso o egreso).
-:heavy_check_mark: Actuador de alarmas o señales vigia (cupo completo o incompleto).
-:heavy_check_mark: Conexión MQTT.
-:heavy_check_mark: Conexión WiFi modo Station.
-:heavy_check_mark: Ingreso de credenciales MQTT via WEB.
-:heavy_check_mark: Envio de datos a Broker MQTT.
-:heavy_check_mark: Recepción de datos desde Broker MQTT.
+- Crear Funciones o tareas:<br />
+:heavy_check_mark: Actuador de ultrasonido.<br />
+:heavy_check_mark: Medidor de distancia.<br />
+:heavy_check_mark: Detector de ingreso.<br />
+:heavy_check_mark: Detector de egreso.<br />
+:heavy_check_mark: Contador de evento (ingreso o egreso).<br />
+:heavy_check_mark: Actuador de alarmas o señales vigia (cupo completo o incompleto).<br />
+:heavy_check_mark: Conexión MQTT.<br />
+:heavy_check_mark: Conexión WiFi modo Station.<br />
+:heavy_check_mark: Ingreso de credenciales MQTT via WEB.<br />
+:heavy_check_mark: Envio de datos a Broker MQTT.<br />
+:heavy_check_mark: Recepción de datos desde Broker MQTT.<br />
 
-- Node Red:
-:heavy_check_mark: Inicialización del Broker MQTT.
-:heavy_check_mark: Inicialización de conexion a Base de Datos MySQL.
-:heavy_check_mark: Función de recepcion de datos.
-:heavy_check_mark: Formateo de datos.
-:heavy_check_mark: Envio de datos a MySQL.
-:x: Envio de datos a Dashboard.
-:x: Recepción de datos de Dashboard.
-:heavy_check_mark: Función de envio de datos a los Nodos.
-:heavy_check_mark: Función de formateo de datos para los Nodos.
+- Node Red:<br />
+:heavy_check_mark: Inicialización del Broker MQTT.<br />
+:heavy_check_mark: Inicialización de conexion a Base de Datos MySQL.<br />
+:heavy_check_mark: Función de recepcion de datos.<br />
+:heavy_check_mark: Formateo de datos.<br />
+:heavy_check_mark: Envio de datos a MySQL.<br />
+:x: Envio de datos a Dashboard.<br />
+:x: Recepción de datos de Dashboard.<br />
+:heavy_check_mark: Función de envio de datos a los Nodos.<br />
+:heavy_check_mark: Función de formateo de datos para los Nodos.<br />
 
-- Base de datos MySQL:
-:heavy_check_mark: Creacion e implementacion en servidor.
-:heavy_check_mark: Creación de usuario de escritura.
-:x: Creación de usuario de lectura.
-:heavy_check_mark: Creación de tabla.
-:heavy_check_mark: Definición de modelos o entidades de datos.
+- Base de datos MySQL:<br />
+:heavy_check_mark: Creacion e implementacion en servidor.<br />
+:heavy_check_mark: Creación de usuario de escritura.<br />
+:x: Creación de usuario de lectura.<br />
+:heavy_check_mark: Creación de tabla.<br />
+:heavy_check_mark: Definición de modelos o entidades de datos.<br />
 
-- Graphana:
-:heavy_check_mark: Modificacion de usuario admin.
-:heavy_check_mark: Creación de usuario publico.
-:heavy_check_mark: Creación panel de graficos.
-:heavy_check_mark: Creación de query para graficos.
+- Graphana:<br />
+:heavy_check_mark: Modificacion de usuario admin.<br />
+:heavy_check_mark: Creación de usuario publico.<br />
+:heavy_check_mark: Creación panel de graficos.<br />
+:heavy_check_mark: Creación de query para graficos.<br />
 
 > Coordinaremos las tareas a realizar por medio de los diferentes medios de comunicación disponibles.
 Se realizará cada tarea en un branch diferente o al menos en el bramch especifico de quien la realiza y, una vez finalizada, se informará marcandola aquí mismo.
